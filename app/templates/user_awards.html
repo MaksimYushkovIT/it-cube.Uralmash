@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Награды пользователя {{ user.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Награды пользователя {{ user.full_name }}</h1>
+
+    <h2>Конкурсы</h2>
+    <table class="table table-striped table-hover">
+        <thead class="table-primary">
+            <tr>
+                <th>Название конкурса</th>
+                <th>Уровень</th>
+                <th>Качество проекта</th>
+                <th>Место</th>
+                <th>Коммуникация</th>
+                <th>Дата</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for competition in competitions %}
+            <tr>
+                <td>{{ competition.name }}</td>
+                <td>{{ competition.level }}</td>
+                <td>{{ competition.project_quality }}</td>
+                <td>{{ competition.place }}</td>
+                <td>{{ competition.communication }}</td>
+                <td>{{ competition.date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Еженедельные оценки</h2>
+    <table class="table table-striped table-hover">
+        <thead class="table-primary">
+            <tr>
+                <th>Дата начала недели</th>
+                <th>Успеваемость</th>
+                <th>Наставничество</th>
+                <th>Работа в команде</th>
+                <th>Дисциплина</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for weekly_performance in weekly_performances %}
+            <tr>
+                <td>{{ weekly_performance.week_start }}</td>
+                <td>{{ weekly_performance.academic_performance }}</td>
+                <td>{{ weekly_performance.mentoring }}</td>
+                <td>{{ weekly _performance.teamwork }}</td>
+                <td>{{ weekly_performance.discipline }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Годовые оценки</h2>
+    <table class="table table-striped table-hover">
+        <thead class="table-primary">
+            <tr>
+                <th>Год</th>
+                <th>Проекты</th>
+                <th>Технологический диктант</th>
+                <th>Входной мониторинг</th>
+                <th>Промежуточная аттестация</th>
+                <th>Итоговая аттестация</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for yearly_performance in yearly_performances %}
+            <tr>
+                <td>{{ yearly_performance.year }}</td>
+                <td>{{ yearly_performance.projects_score }}</td>
+                <td>{{ yearly_performance.tech_dictation_score }}</td>
+                <td>{{ yearly_performance.initial_monitoring_score }}</td>
+                <td>{{ yearly_performance.intermediate_certification_score }}</td>
+                <td>{{ yearly_performance.final_certification_score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

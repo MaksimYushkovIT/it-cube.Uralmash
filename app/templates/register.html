@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">Регистрация</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя:</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">ФИО:</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Электронная почта:</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль:</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Роль:</label>
+                            <select class="form-select" id="role" name="role" required onchange="toggleGroupField()">
+                                <option value="student">Ученик</option>
+                                <option value="teacher">Учитель</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="group_field">
+                            <label for="group_id" class="form-label">Группа:</label>
+                            <select class="form-select" id="group_id" name="group_id">
+                                {% for group in groups %}
+                                    <option value="{{ group.id }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleGroupField() {
+        var role = document.getElementById('role').value;
+        var groupField = document.getElementById('group_field');
+        var groupSelect = document.getElementById('group_id');
+        if (role === 'student') {
+            groupField.style.display = 'block';
+            groupSelect.disabled = false;
+            groupSelect.required = true;
+        } else {
+            groupField.style.display = 'none';
+            groupSelect.disabled = true;
+            groupSelect.required = false;
+        }
+    }
+    document.getElementById('role').addEventListener('change', toggleGroupField);
+    // Вызываем функцию при загрузке страницы, чтобы установить начальное состояние
+    toggleGroupField();
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Отслеживание очков{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Отслеживание очков</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Текущий баланс</h2>
+            <p class="card-text display-4">{{ current_user.points }} очков</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title mb-4">История изменений очков</h2>
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Дата</th>
+                                <th>Очки</th>
+                                <th>Причина</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.date }}</td>
+                                    <td class="{{ 'text-success' if transaction.points > 0 else 'text-danger' }}">
+                                        {{ transaction.points }}
+                                    </td>
+                                    <td>{{ transaction.reason }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">История изменений пуста.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

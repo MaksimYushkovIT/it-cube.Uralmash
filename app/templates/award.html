@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Награда{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Награда</h1>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="user_id">Выберите пользователя</label>
+            <select class="form-control" id="user_id" name="user_id">
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="award_type">Выберите тип награды</label>
+            <select class="form-control" id="award_type" name="award_type">
+                <option value="competition">Конкурс</option>
+                <option value="weekly">Еженедельная оценка</option>
+                <option value="yearly">Годовая оценка</option>
+            </select>
+        </div>
+
+        <div id="competition-form" style="display: none;">
+            <div class="form-group">
+                <label for="competition_name">Название конкурса</label>
+                <input type="text" class="form-control" id="competition_name" name="competition_name">
+            </div>
+
+            <div class="form-group">
+                <label for="level">Уровень конкурса</label>
+                <select class="form-control" id="level" name="level">
+                    <option value="1">Муниципальный</option>
+                    <option value="2">Региональный</option>
+                    <option value="3">Межрегиональный/Всероссийский</option>
+                    <option value="4">Международный</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="project_quality">Качество проекта</label>
+                <select class="form-control" id="project_quality" name="project_quality">
+                    <option value="1">Минимальный уровень</option>
+                    <option value="2">Средний уровень</option>
+                    <option value="3">Сложный уровень</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="place">Место</label>
+                <select class="form-control" id="place" name="place">
+                    <option value="1">3 место</option>
+                    <option value="2">2 место</option>
+                    <option value="3">1 место</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="communication">Коммуникация</label>
+                <input type="number" class="form-control" id="communication" name="communication">
+            </div>
+        </div>
+
+        <div id="weekly-form" style="display: none;">
+            <div class="form-group">
+                <label for="week_start ">Дата начала недели</label>
+                <input type="date" class="form-control" id="week_start" name="week_start">
+            </div>
+
+            <div class="form-group">
+                <label for="academic_performance">Успеваемость</label>
+                <select class="form-control" id="academic_performance" name="academic_performance">
+                    <option value="0">Не качественно</option>
+                    <option value="1">Прошел</option>
+                    <option value="2">Дополнительное задание</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mentoring">Наставничество</label>
+                <select class="form-control" id="mentoring" name="mentoring">
+                    <option value="0">Не помог</option>
+                    <option value="1">Помог</option>
+                    <option value="2">Активная роль наставника</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="teamwork">Работа в команде</label>
+                <select class="form-control" id="teamwork" name="teamwork">
+                    <option value="0">Мало подключался</option>
+                    <option value="1">Активно вовлечен</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="discipline">Дисциплина</label>
+                <input type="number" class="form-control" id="discipline" name="discipline">
+            </div>
+        </div>
+
+        <div id="yearly-form" style="display: none;">
+            <div class="form-group">
+                <label for="year">Год</label>
+                <input type="number" class="form-control" id="year" name="year">
+            </div>
+
+            <div class="form-group">
+                <label for="projects_score">Проекты</label>
+                <input type="number" class="form-control" id="projects_score" name="projects_score">
+            </div>
+
+            <div class="form-group">
+                <label for="tech_dictation_score">Технологический диктант</label>
+                <input type="number" class="form-control" id="tech_dictation_score" name="tech_dictation_score">
+            </div>
+
+            <div class="form-group">
+                <label for="initial_monitoring_score">Входной мониторинг</label>
+                <input type="number" class="form-control" id="initial_monitoring_score" name="initial_monitoring_score">
+            </div>
+
+            <div class="form-group">
+                <label for="intermediate_certification_score">Промежуточная аттестация</label>
+                <input type="number" class="form-control" id="intermediate_certification_score" name="intermediate_certification_score">
+            </div>
+
+            <div class="form-group">
+                <label for="final_certification_score">Итоговая аттестация</label>
+                <input type="number" class="form-control" id="final_certification_score" name="final_certification_score">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Добавить награду</button>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const awardTypeSelect = document.getElementById('award_type');
+            const competitionForm = document.getElementById('competition-form');
+            const weeklyForm = document.getElementById('weekly-form');
+            const yearlyForm = document.getElementById('yearly-form');
+
+            awardTypeSelect.addEventListener('change', function() {
+                switch (awardTypeSelect.value) {
+                    case 'competition':
+                        competitionForm.style.display = 'block';
+                        weeklyForm.style.display = 'none';
+                        yearlyForm.style.display = 'none';
+                        break;
+                    case 'weekly':
+                        competitionForm.style.display = 'none';
+                        weeklyForm.style.display = 'block';
+                        yearlyForm.style.display = 'none';
+                        break;
+                    case 'yearly':
+                        competitionForm.style.display = 'none';
+                        weeklyForm.style.display = 'none';
+                        yearlyForm.style.display = 'block';
+                        break;
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

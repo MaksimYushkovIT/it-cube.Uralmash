@@ -1,0 +1,141 @@
+:root {
+    --primary-blue: #3498db;
+    --light-blue: #ebf5fb;
+    --dark-blue: #2980b9;
+    --text-color: #333;
+    --background-color: #fff;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+header {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 10px 0;
+}
+
+header .navbar-brand {
+    color: white;
+    font-weight: bold;
+}
+
+header .nav-link {
+    color: white;
+}
+
+header .nav-link:hover {
+    color: var(--light-blue);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--dark-blue);
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+}
+
+table {
+    background-color: var(--light-blue);
+}
+
+table th {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.flash-message {
+    background-color: var(--light-blue);
+    border: 1px solid var(--primary-blue);
+    color: var(--text-color);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+form {
+    background-color: var(--light-blue);
+    padding: 20px;
+    border-radius: 5px;
+}
+
+input[type="text"], input[type="password"], input[type="number"], select {
+    border: 1px solid var(--primary-blue);
+}
+
+.pagination a {
+    color: var(--primary-blue);
+}
+
+.current-user {
+    background-color: var(--light-blue);
+}
+
+.table-primary {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    border-color: var (--dark-blue);
+}
+
+.table-primary {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-red);
+    border-color: var(--danger-red);
+}
+
+.btn-danger:hover {
+    background-color: var(--dark-re ddish);
+    border-color: var(--dark-reddish);
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.display-4 {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.table-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.table-primary {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-red);
+    border-color: var(--danger-red);
+}
+
+.btn-danger:hover {
+    background-color: var(--dark-re ddish);
+    border-color: var(--dark-reddish);
+}

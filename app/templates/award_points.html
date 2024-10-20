@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Начисление очков или штрафов{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Начисление очков или штрафов</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form method="POST" class="bg-light p-4 rounded shadow">
+                <div class="mb-3">
+                    <label for="user_id" class="form-label">Выберите ученика:</label>
+                    <select name="user_id" id="user_id" class="form-select" required>
+                        <option value="">-- Выберите ученика --</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="points" class="form-label">Количество очков:</label>
+                    <input type="number" name="points" id="points" class="form-control" required min="1">
+                </div>
+
+                <div class="mb-3">
+                    <label for="transaction_type" class="form-label">Тип операции:</label>
+                    <select name="transaction_type" id="transaction_type" class="form-select" required>
+                        <option value="award">Начисление</option>
+                        <option value="penalty">Штраф</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Причина:</label>
+                    <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Выполнить операцию</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
