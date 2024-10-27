@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import jsonify, Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, login_required, logout_user, current_user
 from app import db
 from app.models import User, Group, Transaction, WeeklyPerformance, Project
 from werkzeug.security import check_password_hash
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
+from app.models import Competition
 
 bp = Blueprint('main', __name__)
 
@@ -225,39 +226,72 @@ def users():
 @bp.route('/update_weekly_performance', methods=['POST'])
 @login_required
 def update_weekly_performance():
+    if current_user.role not in ['teacher', 'admin']:
+        return jsonify({"error": "Недостаточно прав"}), 403
+
     data = request.json
     student_id = data.get('student_id')
+    field = data.get('field')
+    value = data.get('value')
     week_start = datetime.strptime(data.get('week_start'), '%Y-%m-%d').date()
-    academic_performance = data.get('academic_performance')
-    mentoring = data.get('mentoring')
-    teamwork = data.get('teamwork')
-    discipline = data.get('discipline')
+
+    if not all([student_id, field, value is not None, week_start]):
+        return jsonify({"error": "Не все необходимые данные предоставлены"}), 400
+
+    try:
+        value = int(value)
+    except ValueError:
+        return jsonify({"error": "Некорректное значение"}), 400
 
     weekly_perf = WeeklyPerformance.query.filter_by(
         user_id=student_id,
         week_start=week_start
     ).first()
 
-    if weekly_perf:
-        weekly_perf.academic_performance = academic_performance
-        weekly_perf.mentoring = mentoring
-        weekly_perf.teamwork = teamwork
-        weekly_perf.discipline = discipline
+    if not weekly_perf:
+        weekly_perf = WeeklyPerformance(
+            user_id=student_id,
+            week_start=week_start,
+            week=week_start.isocalendar()[1],
+            year=week_start.year,
+            points=0,
+            academic_performance=0,
+            mentoring=0,
+            teamwork=0,
+            discipline=0
+        )
+        db.session.add(weekly_perf)
 
-        # Вычисляем общее количество баллов
-        total_points = academic_performance + mentoring + teamwork + discipline
-        weekly_perf.points = total_points
+    # Обновляем соответствующее поле
+    setattr(weekly_perf, field, value)
 
-        # Обновляем общее количество баллов пользователя
-        user = User.query.get(student_id)
-        if user:
-            user.points += total_points
+    # Убедимся, что все значения определены перед сложением
+    academic_performance = weekly_perf.academic_performance or 0
+    mentoring = weekly_perf.mentoring or 0
+    teamwork = weekly_perf.teamwork or 0
+    discipline = weekly_perf.discipline or 0
 
+    # Пересчитываем общие очки
+    weekly_perf.points = (
+        academic_performance +
+        mentoring +
+        teamwork +
+        discipline
+    )
+
+    try:
         db.session.commit()
-
-        return jsonify({"success": True, "new_points": user.points if user else None})
-    else:
-        return jsonify({"error": "Weekly performance record not found"}), 404
+        return jsonify({
+            "success": True, 
+            "points": weekly_perf.points,
+            "academic_performance": academic_performance,
+            "mentoring": mentoring,
+            "teamwork": teamwork,
+            "discipline": discipline
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 @bp.route('/weekly_performance', methods=['GET', 'POST'])
 @login_required
@@ -272,6 +306,7 @@ def weekly_performance():
     else:
         selected_date = datetime.now()
 
+    # Получаем начало недели
     week_start = selected_date - timedelta(days=selected_date.weekday())
     week_end = week_start + timedelta(days=6)
 
@@ -286,11 +321,13 @@ def weekly_performance():
     student_performances = []
 
     for student in students:
+        # Ищем существующую запись производительности для данной недели
         weekly_perf = WeeklyPerformance.query.filter_by(
             user_id=student.id,
             week_start=week_start.date()
         ).first()
 
+        # Если записи нет, создаем новую
         if not weekly_perf:
             weekly_perf = WeeklyPerformance(
                 user_id=student.id,
@@ -304,41 +341,9 @@ def weekly_performance():
                 discipline=0
             )
             db.session.add(weekly_perf)
-        
+            db.session.commit()
+
         student_performances.append((student, weekly_perf))
-    
-    db.session.commit()
-
-    if request.method == 'POST':
-        action = request.form.get('action')
-        student_id = request.form.get('student_id')
-        points = int(request.form.get('points'))
-        reason = request.form.get('reason')
-
-        student = User.query.get(student_id)
-        if not student:
-            return jsonify({"error": "Студент не найден"}), 404
-
-        if action == 'reward':
-            student.points += points
-            transaction_type = 'reward'
-        elif action == 'penalty':
-            student.points -= points
-            transaction_type = 'penalty'
-        else:
-            return jsonify({"error": "Неверное действие"}), 400
-
-        transaction = Transaction(
-            user_id=student.id,
-            points=points if action == 'reward' else -points,
-            reason=reason,
-            transaction_type=transaction_type,
-            awarded_by_id=current_user.id
-        )
-        db.session.add(transaction)
-        db.session.commit()
-
-        return jsonify({"success": True, "new_points": student.points})
 
     return render_template(
         'weekly_performance.html',
@@ -456,3 +461,49 @@ def user_awards(user_id):
     weekly_performances = WeeklyPerformance.query.filter_by(user_id=user_id).all()
     yearly_performances = YearlyPerformance.query.filter_by(user_id=user_id).all()
     return render_template('user_awards.html', user=user, competitions=competitions, weekly_performances=weekly_performances, yearly_performances=yearly_performances)
+
+@bp.route('/submit_reward_penalty', methods=['POST'])
+def submit_reward_penalty():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    user_id = data.get('student_id')
+    action = data.get('action')
+    points = int(data.get('points'))  # Преобразуем в целое число
+    reason = data.get('reason')
+
+    # Определяем тип транзакции
+    transaction_type = 'reward' if action == 'reward' else 'penalty'
+
+    # Получаем пользователя из базы данных
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Создаем новую запись о транзакции
+    new_transaction = Transaction(
+        user_id=user_id,
+        points=points if action == 'reward' else -points,  # Отрицательные очки для штрафов
+        transaction_type=transaction_type,
+        reason=reason,
+        awarded_by_id=current_user.id  # Добавляем ID пользователя, который выдал награду/штраф
+    )
+
+    # Обновляем очки пользователя
+    if action == 'reward':
+        user.points += points  # Увеличиваем очки
+    elif action == 'penalty':
+        user.points -= points  # Уменьшаем очки
+        if user.points < 0:
+            user.points = 0  # Не допускаем отрицательных значений
+
+    # Добавляем запись о транзакции в базу данных
+    db.session.add(new_transaction)
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'points': user.points,
+        'message': f"{'Награда' if action == 'reward' else 'Штраф'} успешно применен"
+    })

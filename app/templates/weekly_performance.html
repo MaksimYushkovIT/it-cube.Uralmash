@@ -28,7 +28,7 @@
     </form>
 
     <table class="table table-striped">
-        <thead>
+        <thead class="table-primary">
             <tr>
                 <th>Ученик</th>
                 <th>Успеваемость</th>
@@ -87,82 +87,111 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const performanceInputs = document.querySelectorAll('.performance-input');
-    const rewardButtons = document.querySelectorAll('.reward-btn');
-    const penaltyButtons = document.querySelectorAll('.penalty-btn');
-    const modal = new bootstrap.Modal(document.getElementById('rewardPenaltyModal'));
-    const rewardPenaltyForm = document.getElementById('rewardPenaltyForm');
-
-    performanceInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const studentId = this.dataset.studentId;
-            const field = this.dataset.field;
-            const value = this.value;
-
-            fetch('/update_weekly_performance', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    student_id: studentId,
-                    field: field,
-                    value: value,
-                    week_start: '{{ week_start.strftime("%Y-%m-%d") }}'
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
+    document.addEventListener('DOMContentLoaded', function() {
+        const performanceInputs = document.querySelectorAll('.performance-input');
+        
+        performanceInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const studentId = this.dataset.studentId;
+                const field = this.dataset.field;
+                const value = this.value;
+                const weekStart = document.getElementById('date').value;
+    
+                fetch('/update_weekly_performance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        field: field,
+                        value: value,
+                        week_start: weekStart
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        // Можно добавить визуальное подтверждение сохранения
+                        console.log('Данные успешно сохранены');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при сохранении данных');
+                });
+            });
+        });
+    
+        // Обработчик изменения даты
+        document.getElementById('date').addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик для кнопки "Наградить"
+        document.querySelectorAll('.reward-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                // Устанавливаем ID студента в скрытое поле модального окна
+                document.getElementById('studentId').value = studentId;
+                document.getElementById('action').value = 'reward'; // Устанавливаем действие
+                // Открываем модальное окно
+                const rewardModal = new bootstrap.Modal(document.getElementById('rewardPenaltyModal'));
+                rewardModal.show();
+            });
+        });
+    
+        // Обработчик для кнопки "Оштрафовать"
+        document.querySelectorAll('.penalty-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                // Устанавливаем ID студента в скрытое поле модального окна
+                document.getElementById('studentId').value = studentId;
+                document.getElementById('action').value = 'penalty'; // Устанавливаем действие
+                // Открываем модальное окно
+                const penaltyModal = new bootstrap.Modal(document.getElementById('rewardPenaltyModal'));
+                penaltyModal.show();
             });
         });
     });
-
-    function showRewardPenaltyModal(studentId, action) {
-        document.getElementById('studentId').value = studentId;
-        document.getElementById('action').value = action;
-        document.getElementById('rewardPenaltyModalLabel').textContent = action === 'reward' ? 'Награждение' : 'Штрафование';
-        modal.show();
-    }
-
-    rewardButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            showRewardPenaltyModal(this.dataset.studentId, 'reward');
-        });
-    });
-
-    penaltyButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            showRewardPenaltyModal(this.dataset.studentId, 'penalty');
-        });
-    });
-
     document.getElementById('submitRewardPenalty').addEventListener('click', function() {
-        const formData = new FormData(rewardPenaltyForm);
-        fetch('/weekly_performance', {
+        const studentId = document.getElementById('studentId').value;
+        const action = document.getElementById('action').value;
+        const points = document.getElementById('points').value;
+        const reason = document.getElementById('reason').value;
+    
+        // Выполняем запрос на сервер
+        fetch('/submit_reward_penalty', {
             method: 'POST',
-            body: formData,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                action: action,
+                points: points,
+                reason: reason
+            }),
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                modal.hide();
-                location.reload();
-            } else {
+            if (data.error) {
                 alert(data.error);
+            } else {
+                // Закрываем модальное окно
+                const rewardPenaltyModal = bootstrap.Modal.getInstance(document.getElementById('rewardPenaltyModal'));
+                rewardPenaltyModal.hide();
+                // Обновляем страницу или делаем что-то еще
+                location.reload(); // или обновите нужные данные на странице
             }
         })
         .catch((error) => {
             console.error('Error:', error);
-            alert('Произошла ошибка при отправке запроса');
+            alert('Произошла ошибка при отправке данных');
         });
     });
-});
 </script>
 {% endblock %}

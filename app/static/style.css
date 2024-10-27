@@ -139,3 +139,22 @@ input[type="text"], input[type="password"], input[type="number"], select {
     background-color: var(--dark-re ddish);
     border-color: var(--dark-reddish);
 }
+
+.btn-danger {
+    background-color: #dc3545; /* Цвет фона для кнопки "Оштрафовать" */
+    color: white; /* Цвет текста */
+}
+
+.btn-danger:hover {
+    background-color: #c82333; /* Цвет фона при наведении */
+    color: white; /* Цвет текста при наведении */
+}
+
+.btn-danger:focus {
+    outline: none; /* Убираем обводку при фокусе */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5); /* Добавляем тень при фокусе */
+}
+
+.table-striped thead {
+    color: #2980b9;
+}
